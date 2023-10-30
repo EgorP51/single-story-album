@@ -37,8 +37,11 @@ class AlbumPage extends StatelessWidget {
               height: a,
               width: a,
               child: InkWell(
+                onLongPress: () {
+                  bloc.add(AddPhotosTogether());
+                },
                 onTap: () {
-                  bloc.add(AddPhoto(id));
+                  bloc.add(AddPhotoSeparately(id));
                 },
                 child: state.images?[id] ??
                     Container(

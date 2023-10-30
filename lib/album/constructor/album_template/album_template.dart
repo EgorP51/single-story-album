@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:single_story_album/album/@manager/album_bloc.dart';
 import 'package:single_story_album/album/constructor/album_template/album_cover.dart';
 import 'package:single_story_album/album/constructor/album_template/album_page.dart';
@@ -16,9 +17,7 @@ class AlbumTemplate extends StatelessWidget {
     double a4Height = cm * 29.7;
 
     return BlocConsumer<AlbumBloc, AlbumState>(
-      listener: (context, state) {
-        // TODO: implement listener
-      },
+      listener: (context, state) {},
       builder: (context, state) {
         return Container(
           width: a4Width,

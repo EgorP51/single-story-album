@@ -43,11 +43,11 @@ class AlbumCover extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Container(
-                      child: InkWell(
-                        onTap: (){
-                          bloc.add(AddPhoto(id));
-                        },
+                    child: InkWell(
+                      onTap: () {
+                        bloc.add(AddPhotoSeparately(id));
+                      },
+                      child: Center(
                         child: state.images?[id] ??
                             Container(
                               width: double.infinity,
@@ -64,24 +64,24 @@ class AlbumCover extends StatelessWidget {
                   isFront
                       ? InkWell(
                           onTap: () {
-                            changeTitleDialog(context, state);
+                            bloc.changeTitleDialog(context, state);
                           },
                           child: Text(
                             state.albumTitle ?? '',
                             style: GoogleFonts.merriweather(
-                              fontSize: 12,
+                              fontSize: 10,
                             ),
                           ),
                         )
                       : InkWell(
                           onTap: () {
-                            changeDescriptionDialog(context, state);
+                            bloc.changeDescriptionDialog(context, state);
                           },
                           child: Text(
                             state.albumDescription ?? '',
                             maxLines: null,
                             style: GoogleFonts.merriweather(
-                              fontSize: 6,
+                              fontSize: 8,
                             ),
                           ),
                         ),
@@ -90,64 +90,6 @@ class AlbumCover extends StatelessWidget {
               ),
             ),
           ),
-        );
-      },
-    );
-  }
-
-  void changeTitleDialog(context, state) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        String tempAlbumTitle = state.albumTitle ?? '';
-        return AlertDialog(
-          title: const Text('Enter album name'),
-          content: TextField(
-            onChanged: (text) {
-              tempAlbumTitle = text;
-            },
-          ),
-          actions: [
-            FloatingActionButton(
-              onPressed: () {
-                bloc.add(
-                  ChangeAlbumTitle(tempAlbumTitle),
-                );
-                Navigator.of(context).pop();
-              },
-              child: const Icon(CupertinoIcons.pen),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void changeDescriptionDialog(context, state) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        String tempAlbumDescription = state.albumDescription ?? '';
-        return AlertDialog(
-          title: const Text('Enter album description'),
-          content: TextField(
-            onChanged: (text) {
-              tempAlbumDescription = text;
-            },
-          ),
-          actions: [
-            FloatingActionButton(
-              onPressed: () {
-                bloc.add(
-                  ChangeAlbumDescription(
-                    tempAlbumDescription,
-                  ),
-                );
-                Navigator.of(context).pop();
-              },
-              child: const Icon(CupertinoIcons.pen),
-            ),
-          ],
         );
       },
     );

@@ -29,11 +29,13 @@ class ChangeAlbumDescription extends AlbumEvent {
   List<Object?> get props => [description];
 }
 
-class AddPhoto extends AlbumEvent {
-  AddPhoto(this.id);
+class AddPhotoSeparately extends AlbumEvent {
+  AddPhotoSeparately(this.id);
 
   final int id;
 
   @override
   List<Object?> get props => [id];
 }
+
+class AddPhotosTogether extends AlbumEvent {}

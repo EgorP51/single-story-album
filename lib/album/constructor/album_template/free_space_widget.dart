@@ -46,8 +46,11 @@ class FreeSpaceWidget extends StatelessWidget {
                 height: MediaQuery.of(context).size.width * 0.95 / 21 * 5,
                 child: Column(
                   children: [
-                    Expanded(
+                    Padding(
+                      padding: const EdgeInsets.all(4.0),
                       child: GridView.count(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
                         crossAxisSpacing: 4,
                         mainAxisSpacing: 4,
                         crossAxisCount: 4,
@@ -66,17 +69,6 @@ class FreeSpaceWidget extends StatelessWidget {
                         }),
                       ),
                     ),
-                    BlocConsumer<AlbumBloc, AlbumState>(
-                      listener: (context, state) {
-                        // TODO: implement listener
-                      },
-                      builder: (context, state) {
-                        return Text(
-                          state.albumTitle ?? '',
-                          style: GoogleFonts.merriweather(color: Colors.white),
-                        );
-                      },
-                    )
                   ],
                 ),
               ),

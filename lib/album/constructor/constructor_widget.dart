@@ -33,11 +33,61 @@ class ConstructorWidget extends StatelessWidget {
           backgroundColor: Colors.black45,
           body: state.controller != null
               ? SingleChildScrollView(
-                  child: Align(
-                    alignment: const Alignment(0, -0.7),
-                    child: WidgetsToImage(
-                      controller: state.controller!,
-                      child: const AlbumTemplate(),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        WidgetsToImage(
+                          controller: state.controller!,
+                          child: const AlbumTemplate(),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          alignment: Alignment.centerLeft,
+                          child: GestureDetector(
+                            onTap: () {
+                              BlocProvider.of<AlbumBloc>(context)
+                                  .changeTitleDialog(
+                                context,
+                                state,
+                              );
+                            },
+                            child: Text(
+                              'Title: ${state.albumTitle}' ?? '',
+                              style: GoogleFonts.merriweather(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          alignment: Alignment.centerLeft,
+                          child: GestureDetector(
+                            onTap: () {
+                              BlocProvider.of<AlbumBloc>(context)
+                                  .changeDescriptionDialog(
+                                context,
+                                state,
+                              );
+                            },
+                            child: Text(
+                              'Description: ${state.albumDescription}',
+                              style: GoogleFonts.merriweather(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 )
@@ -53,7 +103,9 @@ class ConstructorWidget extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) {
-                        return PreviewPage(state: state,);
+                        return PreviewPage(
+                          state: state,
+                        );
                       },
                     ),
                   );

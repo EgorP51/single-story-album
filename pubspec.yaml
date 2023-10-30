@@ -47,6 +47,7 @@ dependencies:
   share_plus: ^7.2.1
   path_provider: ^2.1.1
   widget_zoom: ^0.0.2
+  flutter_native_splash: ^2.3.5
 
 dev_dependencies:
   flutter_test:

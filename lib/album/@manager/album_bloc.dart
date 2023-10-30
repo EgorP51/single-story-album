@@ -1,12 +1,15 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:widgets_to_image/widgets_to_image.dart';
 
@@ -35,13 +38,18 @@ class AlbumBloc extends Bloc<AlbumEvent, AlbumState> {
     on<ChangeAlbumDescription>((event, emit) {
       _changeAlbumDescription(event, emit);
     });
-    on<AddPhoto>((event, emit) async {
-      final img = await _addPhoto(event, emit);
+    on<AddPhotoSeparately>((event, emit) async {
+      final img = await _addPhotosSeparately(event, emit);
       List<Image?>? newImages = state.images?.toList();
 
       newImages?[event.id] = img;
 
       emit(state.copyWith(images: newImages));
+    });
+    on<AddPhotosTogether>((event, emit) async {
+      final images = await _addPhotoTogether(event, emit);
+
+      emit(state.copyWith(images: images));
     });
   }
 
@@ -79,20 +87,23 @@ class AlbumBloc extends Bloc<AlbumEvent, AlbumState> {
   }
 
   void _shareAlbum(event, emit) async {
+    final bytes = await state.controller!.capture();
 
-    // TODO: add the ability to send a file directly to telegram!
-    // final bytes = await state.controller!.capture();
-    //
-    // if (bytes != null) {
-    //   await Share.shareXFiles(
-    //     [XFile.fromData(bytes)],
-    //     text: "Single story album app",
-    //   );
-    // } else {
-    //   throw Error();
-    // }
-    
-    await Share.share('This functionality has not yet been implemented');
+    if (bytes != null) {
+      final tempDir = await getTemporaryDirectory();
+      final tempPath = '${tempDir.path}/single_story_album.png';
+      File tempFile = File(tempPath);
+      await tempFile.writeAsBytes(bytes);
+
+      await Share.shareXFiles(
+        [XFile(tempPath)],
+        text: "Single story album app",
+      );
+
+      await tempFile.delete();
+    } else {
+      throw Error();
+    }
   }
 
   void _changeAlbumTitle(ChangeAlbumTitle event, emit) {
@@ -103,13 +114,28 @@ class AlbumBloc extends Bloc<AlbumEvent, AlbumState> {
     emit(state.copyWith(albumDescription: event.description));
   }
 
-  Future<Image?> _addPhoto(AddPhoto event, emit) async {
+  Future<Image?> _addPhotosSeparately(AddPhotoSeparately event, emit) async {
     final ImagePicker picker = ImagePicker();
     final XFile? imageXFile = await picker.pickImage(
       source: ImageSource.gallery,
     );
 
     return await _convertXFileToImage(imageXFile);
+  }
+
+  Future<List<Image?>> _addPhotoTogether(event, emit) async {
+    final ImagePicker picker = ImagePicker();
+    final List<XFile?> imagesXFile = await picker.pickMultiImage(
+      imageQuality: 100,
+      requestFullMetadata: true,
+    );
+    List<Image?> images = [];
+
+    for (XFile? imageXFile in imagesXFile) {
+      images.add(await _convertXFileToImage(imageXFile));
+    }
+
+    return images;
   }
 
   Future<Image?> _convertXFileToImage(XFile? xFile) async {
@@ -135,5 +161,69 @@ class AlbumBloc extends Bloc<AlbumEvent, AlbumState> {
     }
 
     return null;
+  }
+
+  void changeDescriptionDialog(context, AlbumState state) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        String tempAlbumDescription = state.albumDescription ?? '';
+        return AlertDialog(
+          title: const Text('Enter album description'),
+          content: TextField(
+            controller: TextEditingController(text: state.albumDescription),
+            keyboardType: TextInputType.multiline,
+            maxLines: null,
+            onChanged: (text) {
+              tempAlbumDescription = text;
+            },
+          ),
+          actions: [
+            FloatingActionButton(
+              onPressed: () {
+                add(
+                  ChangeAlbumDescription(
+                    tempAlbumDescription,
+                  ),
+                );
+                Navigator.of(context).pop();
+              },
+              child: const Icon(CupertinoIcons.pen),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void changeTitleDialog(context, AlbumState state) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        String tempAlbumTitle = state.albumTitle ?? '';
+        return AlertDialog(
+          title: const Text('Enter album name'),
+          content: TextField(
+            controller: TextEditingController(text: state.albumTitle),
+            keyboardType: TextInputType.multiline,
+            maxLines: null,
+            onChanged: (text) {
+              tempAlbumTitle = text;
+            },
+          ),
+          actions: [
+            FloatingActionButton(
+              onPressed: () {
+                add(
+                  ChangeAlbumTitle(tempAlbumTitle),
+                );
+                Navigator.of(context).pop();
+              },
+              child: const Icon(CupertinoIcons.pen),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

@@ -36,7 +36,7 @@ class _PreviewPageState extends State<PreviewPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.amber),
       ),
       body: Center(
         child: Padding(

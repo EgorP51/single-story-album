@@ -19,74 +19,39 @@ part 'album_state.dart';
 
 class AlbumBloc extends Bloc<AlbumEvent, AlbumState> {
   AlbumBloc() : super(const AlbumState()) {
-    on<InitialEvent>((event, emit) {
-      _initialEvent(event, emit);
-    });
-    on<SaveAlbum>(
-      (event, emit) {
-        _saveAlbum(event, emit);
-      },
-    );
-    on<ShareAlbum>(
-      (event, emit) {
-        _shareAlbum(event, emit);
-      },
-    );
-    on<ChangeAlbumTitle>((event, emit) {
-      _changeAlbumTitle(event, emit);
-    });
-    on<ChangeAlbumDescription>((event, emit) {
-      _changeAlbumDescription(event, emit);
-    });
-    on<AddPhotoSeparately>((event, emit) async {
-      final img = await _addPhotosSeparately(event, emit);
-      List<Image?>? newImages = state.images?.toList();
-
-      newImages?[event.id] = img;
-
-      emit(state.copyWith(images: newImages));
-    });
-    on<AddPhotosTogether>((event, emit) async {
-      final images = await _addPhotoTogether(event, emit);
-
-      emit(state.copyWith(images: images));
-    });
+    // Event handlers
+    on<InitialEvent>(_handleInitialEvent);
+    on<SaveAlbum>(_handleSaveAlbum);
+    on<ShareAlbum>(_handleShareAlbum);
+    on<ChangeAlbumTitle>(_handleChangeAlbumTitle);
+    on<ChangeAlbumDescription>(_handleChangeAlbumDescription);
+    on<AddPhotoSeparately>(_handleAddPhotoSeparately);
+    on<AddPhotosTogether>(_handleAddPhotosTogether);
   }
 
-  void _initialEvent(event, emit) async {
+  // Event handlers
+  void _handleInitialEvent(InitialEvent event, Emitter<AlbumState> emit) async {
     WidgetsToImageController controller = WidgetsToImageController();
     List<Image?>? images = List.generate(8, (index) => null);
-    emit(state.copyWith(
-      controller: controller,
-      images: images,
-    ));
+    emit(state.copyWith(controller: controller, images: images));
   }
 
-  void _saveAlbum(event, emit) async {
+  void _handleSaveAlbum(SaveAlbum event, Emitter<AlbumState> emit) async {
     try {
       final bytes = await state.controller!.capture();
-
       await ImageGallerySaver.saveImage(
         bytes!,
         quality: 100,
         name: "singleStoryApp",
       );
 
-      Fluttertoast.showToast(
-        msg: "Image saved to gallery",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.TOP,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.white,
-        textColor: Colors.black,
-        fontSize: 16.0,
-      );
+      _showToast("Image saved to gallery");
     } catch (e) {
       rethrow;
     }
   }
 
-  void _shareAlbum(event, emit) async {
+  void _handleShareAlbum(ShareAlbum event, Emitter<AlbumState> emit) async {
     final bytes = await state.controller!.capture();
 
     if (bytes != null) {
@@ -106,15 +71,36 @@ class AlbumBloc extends Bloc<AlbumEvent, AlbumState> {
     }
   }
 
-  void _changeAlbumTitle(ChangeAlbumTitle event, emit) {
+  void _handleChangeAlbumTitle(
+      ChangeAlbumTitle event, Emitter<AlbumState> emit) {
     emit(state.copyWith(albumTitle: event.title));
   }
 
-  void _changeAlbumDescription(ChangeAlbumDescription event, emit) {
+  void _handleChangeAlbumDescription(
+      ChangeAlbumDescription event, Emitter<AlbumState> emit) {
     emit(state.copyWith(albumDescription: event.description));
   }
 
-  Future<Image?> _addPhotosSeparately(AddPhotoSeparately event, emit) async {
+  void _handleAddPhotoSeparately(
+      AddPhotoSeparately event, Emitter<AlbumState> emit) async {
+    final Image? img = await _addPhotosSeparately(event, emit);
+    List<Image?>? newImages = state.images?.toList();
+
+    newImages?[event.id] = img;
+
+    emit(state.copyWith(images: newImages));
+  }
+
+  void _handleAddPhotosTogether(
+      AddPhotosTogether event, Emitter<AlbumState> emit) async {
+    final List<Image?> images = await _addPhotoTogether(event, emit);
+
+    emit(state.copyWith(images: images));
+  }
+
+  // Helper methods
+  Future<Image?> _addPhotosSeparately(
+      AddPhotoSeparately event, Emitter<AlbumState> emit) async {
     final ImagePicker picker = ImagePicker();
     final XFile? imageXFile = await picker.pickImage(
       source: ImageSource.gallery,
@@ -123,16 +109,20 @@ class AlbumBloc extends Bloc<AlbumEvent, AlbumState> {
     return await _convertXFileToImage(imageXFile);
   }
 
-  Future<List<Image?>> _addPhotoTogether(event, emit) async {
+  Future<List<Image?>> _addPhotoTogether(
+    AddPhotosTogether event,
+    Emitter<AlbumState> emit,
+  ) async {
+    List<Image?> images = List.generate(8, (index) => null);
     final ImagePicker picker = ImagePicker();
+
     final List<XFile?> imagesXFile = await picker.pickMultiImage(
       imageQuality: 100,
       requestFullMetadata: true,
     );
-    List<Image?> images = [];
 
-    for (XFile? imageXFile in imagesXFile) {
-      images.add(await _convertXFileToImage(imageXFile));
+    for (int i = 0; i < imagesXFile.length; i++) {
+      images[i] = await _convertXFileToImage(imagesXFile[i]);
     }
 
     return images;
@@ -163,7 +153,20 @@ class AlbumBloc extends Bloc<AlbumEvent, AlbumState> {
     return null;
   }
 
-  void changeDescriptionDialog(context, AlbumState state) {
+  void _showToast(String message) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.TOP,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.white,
+      textColor: Colors.black,
+      fontSize: 16.0,
+    );
+  }
+
+  // Dialogs
+  void changeDescriptionDialog(BuildContext context, AlbumState state) {
     showDialog(
       context: context,
       builder: (context) {
@@ -196,7 +199,7 @@ class AlbumBloc extends Bloc<AlbumEvent, AlbumState> {
     );
   }
 
-  void changeTitleDialog(context, AlbumState state) {
+  void changeTitleDialog(BuildContext context, AlbumState state) {
     showDialog(
       context: context,
       builder: (context) {

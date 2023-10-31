@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:single_story_album/album/@manager/album_bloc.dart';
 import 'package:single_story_album/album/constructor/album_template/album_cover.dart';
 import 'package:single_story_album/album/constructor/album_template/album_page.dart';

@@ -22,9 +22,7 @@ class AlbumPage extends StatelessWidget {
     final double a = cm * 7;
 
     return BlocConsumer<AlbumBloc, AlbumState>(
-      listener: (context, state) {
-        // TODO: implement listener
-      },
+      listener: (context, state) {},
       builder: (context, state) {
         return Padding(
           padding: EdgeInsets.symmetric(
